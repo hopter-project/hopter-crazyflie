@@ -1,0 +1,46 @@
+[package]
+name = "flight-control"
+version = "0.1.0"
+edition = "2021"
+
+[patch.crates-io]
+hopter_conf_params = { path = "./hopter-conf-params" }
+
+[dependencies]
+embedded-hal = "0.2"
+libm = "0.2"
+heapless = "0.8"
+cfg-if = "1.0"
+spin = "0.9.8"
+atomic_float = "1.1.0"
+
+[dependencies.cortex-m]
+version = "0.7"
+features = ["inline-asm"]
+
+[dependencies.stm32f4xx-hal]
+git = "https://github.com/ZhiyaoMa98/stm32f4xx-hal.git"
+branch = "dependency"
+default-features = false
+features = ["stm32f405"]
+
+[dependencies.safer_owning_ref]
+git = "https://github.com/ZhiyaoMa98/owning-ref-rs.git"
+branch = "support_no_std"
+default-features = false
+
+[dependencies.hopter]
+version = "0.3.1"
+features = ["stm32f405"]
+
+[features]
+flow_panic = []
+tof_panic = []
+accel_gyro_panic = []
+estimator_panic = []
+stabilizer_panic = []
+stabilizer_overflow = []
+crtp_rx_panic = []
+exti1_panic = []
+irq_latency_test = []
+no_dbg_print = []

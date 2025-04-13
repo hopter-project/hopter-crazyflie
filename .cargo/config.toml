@@ -1,0 +1,27 @@
+rustflags = [
+  # This is needed if your flash or ram addresses are not aligned to 0x10000 in memory.x
+  # See https://github.com/rust-embedded/cortex-m-quickstart/pull/95
+  "-C", "link-arg=--nmagic",
+
+  # Set the linker script to the one provided by Hopter.
+  "-C", "link-arg=-Tlink.ld",
+
+  # Generate unwind tables for the crate.
+  "-C", "panic=unwind",
+
+  # Set to circumvent known compiler bugs.
+  # https://github.com/rust-lang/rust/issues/95871
+  "-C", "codegen-units=1"
+]
+
+# We must build our own core and alloc crate to include the function prologues,
+# rather than using prebuilt ones.
+[unstable]
+build-std = ["core", "alloc"]
+
+[build]
+target = "thumbv7em-none-eabihf"     # Cortex-M4F and Cortex-M7F (with FPU)
+
+[profile.release]
+opt-level = 3
+lto = "fat"

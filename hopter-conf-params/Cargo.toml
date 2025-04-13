@@ -1,0 +1,12 @@
+[package]
+name = "hopter_conf_params"
+version = "0.3.1000"
+edition = "2021"
+license = "MIT"
+description = "Hopter embedded operating system configuration parameters."
+repository = "https://github.com/hopter-project/hopter-conf-params"
+readme = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
