@@ -1,3 +1,5 @@
+<img src="./.github/assets/hopter-logo.png" alt="Hopter's Logo" width="400"/>
+
 # Crazyflie 2.1 Flight Control
 
 This flight control firmware is built on the [Hopter](https://github.com/hopter-project/hopter) embedded operating system, developed for the [Crazyflie 2.1](https://www.bitcraze.io/products/old-products/crazyflie-2-1/) miniature drone.
