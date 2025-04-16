@@ -19,13 +19,12 @@ version = "0.7"
 features = ["inline-asm"]
 
 [dependencies.stm32f4xx-hal]
-git = "https://github.com/ZhiyaoMa98/stm32f4xx-hal.git"
-branch = "dependency"
+version = "0.22.0"
 default-features = false
 features = ["stm32f405"]
 
 [dependencies.safer_owning_ref]
-git = "https://github.com/ZhiyaoMa98/owning-ref-rs.git"
+git = "https://github.com/zyma98/owning-ref-rs.git"
 branch = "support_no_std"
 default-features = false
 

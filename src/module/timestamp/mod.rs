@@ -17,7 +17,7 @@ pub fn usec_timestamp() -> u64 {
     // Get the lower half of the counter.
     let cnt = {
         let tim7 = super::acquire_irqsafe_tim7_handle();
-        tim7.cnt.read().cnt().bits()
+        tim7.cnt().read().cnt().bits()
     };
 
     // Get the higher half of the counter again.
@@ -33,7 +33,11 @@ pub fn usec_timestamp() -> u64 {
     // the lower half again and combine it with the new higher half. We do not
     // expect to see the higher half get incremented again very soon.
     } else {
-        let cnt = super::acquire_irqsafe_tim7_handle().cnt.read().cnt().bits();
+        let cnt = super::acquire_irqsafe_tim7_handle()
+            .cnt()
+            .read()
+            .cnt()
+            .bits();
         (cur_high as u64) << 16 | (cnt as u64)
     }
 }
@@ -48,5 +52,5 @@ fn tim7_handler() {
 
     // Acknowledge the interrupt.
     let tim7 = crate::module::acquire_irqsafe_tim7_handle();
-    tim7.sr.modify(|_, w| w.uif().clear_bit());
+    tim7.sr().modify(|_, w| w.uif().clear_bit());
 }

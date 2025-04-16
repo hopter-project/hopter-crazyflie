@@ -150,12 +150,16 @@ fn init_leds(
 }
 
 fn init_usec_timestamp(tim7: TIM7, rcc: &RCC, nvic: &mut NVIC) {
-    rcc.apb1enr.modify(|_, w| w.tim7en().set_bit());
+    rcc.apb1enr().modify(|_, w| w.tim7en().set_bit());
 
-    tim7.psc.write(|w| w.psc().bits(83));
-    tim7.arr.write(|w| w.arr().bits(65535));
-    tim7.dier.write(|w| w.uie().set_bit());
-    tim7.cr1.modify(|_, w| w.cen().set_bit());
+    unsafe {
+        tim7.psc().write(|w| w.psc().bits(83));
+    }
+    unsafe {
+        tim7.arr().write(|w| w.arr().bits(65535));
+    }
+    tim7.dier().write(|w| w.uie().set_bit());
+    tim7.cr1().modify(|_, w| w.cen().set_bit());
 
     *TIM7_HANDLE.lock() = Some(tim7);
 
@@ -177,13 +181,13 @@ fn init_motor(
     tim4: TIM4,
     clocks: &Clocks,
 ) {
-    use stm32f4xx_hal::timer::{Channel1, Channel2, Channel4};
     let pa15 = pa15.into_input();
-    let channels = (Channel1::new(pa15), Channel2::new(pa1), Channel4::new(pb11));
-    let (motor_2_pwm, motor_0_pwm, motor_1_pwm) =
-        tim2.pwm_hz(channels, 328125.Hz(), clocks).split();
-    let channel = Channel4::new(pb9);
-    let motor_3_pwm = tim4.pwm_hz(channel, 328125.Hz(), &clocks).split();
+    let (_, (motor_2_pwm, motor_0_pwm, _, motor_1_pwm, ..)) = tim2.pwm_hz(328125.Hz(), clocks);
+    let motor_2_pwm: stm32f4xx_hal::timer::PwmChannel<TIM2, _> = motor_2_pwm.with(pa15);
+    let motor_0_pwm = motor_0_pwm.with(pa1);
+    let motor_1_pwm = motor_1_pwm.with(pb11);
+    let (_, (_, _, _, motor_3_pwm, ..)) = tim4.pwm_hz(328125.Hz(), &clocks);
+    let motor_3_pwm = motor_3_pwm.with(pb9);
     let motor = Motor::new(motor_0_pwm, motor_1_pwm, motor_2_pwm, motor_3_pwm);
     *MOTOR.lock() = Some(motor);
 }
@@ -456,59 +460,59 @@ fn release_peripheral_after_software_reset(i2c1: &I2C1, i2c3: &I2C3) {
 
     let dp = unsafe { pac::Peripherals::steal() };
 
-    i2c1.cr1.modify(|_, w| w.pe().clear_bit());
+    i2c1.cr1().modify(|_, w| w.pe().clear_bit());
 
     dp.GPIOA
-        .moder
+        .moder()
         .modify(|_, w| w.moder6().output().moder7().output());
     dp.GPIOA
-        .otyper
+        .otyper()
         .modify(|_, w| w.ot6().push_pull().ot7().push_pull());
 
-    dp.GPIOB.odr.modify(|_, w| w.odr7().set_bit());
+    dp.GPIOB.odr().modify(|_, w| w.odr7().set_bit());
     for _ in 0..10 {
-        dp.GPIOB.odr.modify(|_, w| w.odr6().set_bit());
+        dp.GPIOB.odr().modify(|_, w| w.odr6().set_bit());
         for _ in 0..1000 {
             cortex_m::asm::nop();
         }
-        dp.GPIOB.odr.modify(|_, w| w.odr6().clear_bit());
+        dp.GPIOB.odr().modify(|_, w| w.odr6().clear_bit());
         for _ in 0..1000 {
             cortex_m::asm::nop();
         }
     }
-    dp.GPIOB.odr.modify(|_, w| w.odr6().clear_bit());
+    dp.GPIOB.odr().modify(|_, w| w.odr6().clear_bit());
 
-    i2c1.cr1.modify(|_, w| w.swrst().set_bit());
-    i2c1.cr1.modify(|_, w| w.swrst().clear_bit());
+    i2c1.cr1().modify(|_, w| w.swrst().set_bit());
+    i2c1.cr1().modify(|_, w| w.swrst().clear_bit());
 
-    while i2c1.cr1.read().swrst().bit_is_set() {}
+    while i2c1.cr1().read().swrst().bit_is_set() {}
 
-    i2c3.cr1.modify(|_, w| w.pe().clear_bit());
+    i2c3.cr1().modify(|_, w| w.pe().clear_bit());
 
-    dp.GPIOA.moder.modify(|_, w| w.moder8().output());
-    dp.GPIOA.otyper.modify(|_, w| w.ot8().push_pull());
+    dp.GPIOA.moder().modify(|_, w| w.moder8().output());
+    dp.GPIOA.otyper().modify(|_, w| w.ot8().push_pull());
 
-    dp.GPIOC.moder.modify(|_, w| w.moder9().output());
-    dp.GPIOC.otyper.modify(|_, w| w.ot9().push_pull());
+    dp.GPIOC.moder().modify(|_, w| w.moder9().output());
+    dp.GPIOC.otyper().modify(|_, w| w.ot9().push_pull());
 
-    dp.GPIOC.odr.modify(|_, w| w.odr9().set_bit());
+    dp.GPIOC.odr().modify(|_, w| w.odr9().set_bit());
 
     for _ in 0..10 {
-        dp.GPIOA.odr.modify(|_, w| w.odr8().set_bit());
+        dp.GPIOA.odr().modify(|_, w| w.odr8().set_bit());
         for _ in 0..1000 {
             cortex_m::asm::nop();
         }
-        dp.GPIOA.odr.modify(|_, w| w.odr8().clear_bit());
+        dp.GPIOA.odr().modify(|_, w| w.odr8().clear_bit());
         for _ in 0..1000 {
             cortex_m::asm::nop();
         }
     }
-    dp.GPIOA.odr.modify(|_, w| w.odr8().set_bit());
+    dp.GPIOA.odr().modify(|_, w| w.odr8().set_bit());
 
-    i2c3.cr1.modify(|_, w| w.swrst().set_bit());
-    i2c3.cr1.modify(|_, w| w.swrst().clear_bit());
+    i2c3.cr1().modify(|_, w| w.swrst().set_bit());
+    i2c3.cr1().modify(|_, w| w.swrst().clear_bit());
 
-    while i2c3.cr1.read().swrst().bit_is_set() {}
+    while i2c3.cr1().read().swrst().bit_is_set() {}
 }
 
 #[allow(unused_mut)]

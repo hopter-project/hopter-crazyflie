@@ -155,6 +155,7 @@ if __name__ == '__main__':
                 bl.flash_full(None, filename, warm_boot, targets)
             except Exception as e:
                 print("Failed to flash: {}".format(e))
+                raise
         elif action == "reset":
             bl.reset_to_firmware()
         else:
